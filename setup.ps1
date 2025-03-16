@@ -20,3 +20,6 @@ docker run -d ^
   -p 11434:11434 ^
   --name ollama ^
   ollama/ollama
+
+docker exec -it ollama ollama pull bge-m3
+docker exec -it ollama ollama pull llama3.2:1b
