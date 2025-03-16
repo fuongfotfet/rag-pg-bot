@@ -1,3 +1,5 @@
 elasticsearch
 ollama
 numpy
+flask
+flask-cors

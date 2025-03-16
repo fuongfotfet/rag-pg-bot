@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from dan.module2 import generate_answer  # import hàm generate_answer mới
+from module2 import generate_answer  # import hàm generate_answer mới
 
 app = Flask(__name__)
 CORS(app)
