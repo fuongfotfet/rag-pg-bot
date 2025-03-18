@@ -1,25 +1,28 @@
+import openai
 from elasticsearch import Elasticsearch
+import os
 
-# Connect to Elasticsearch
+# Thiết lập OpenAI API Key (Đặt biến môi trường hoặc hardcode ở đây)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
+openai.api_key = OPENAI_API_KEY
+
+# Kết nối Elasticsearch
 es = Elasticsearch("http://localhost:9200")
 
-print("connected")
+print("Connected to Elasticsearch")
 
-# Define index mapping
-index_name = 'test'
+# Tạo index với text-embedding-3-large (1536 dimensions)
+index_name = 'text_embeddings_openai'
 mapping = {
     "mappings": {
         "properties": {
             "text": {"type": "text"},
-            "embedding": {"type": "dense_vector", "dims": 1024}  # BGE-M3 produces 1024-dimensional embeddings
+            "embedding": {"type": "dense_vector", "dims": 3072}  # text-embedding-3-large có 1536 dimensions
         }
     }
 }
 
-# Create index if it doesn't exist
-if not es.indices.exists(index=index_name):
-    es.indices.create(index=index_name, body=mapping)
-
-# Create new index
-es.indices.delete(index="text_embeddings", ignore=[400, 404])  
-es.indices.create(index="text_embeddings", body=mapping)
+# Xóa và tạo lại index
+if es.indices.exists(index=index_name):
+    es.indices.delete(index=index_name, ignore=[400, 404])  
+es.indices.create(index=index_name, body=mapping)
