@@ -1,23 +1,42 @@
+import openai
 from elasticsearch import Elasticsearch
-import ollama
+import os
+from dotenv import load_dotenv
 
-es = Elasticsearch(
-    "http://localhost:9200"
-)
+load_dotenv()
 
-def vector_search(query, k=3, index_name='text_embeddings'):
-    # Bước 1: Lấy embedding cho truy vấn
-    response = ollama.embed(model='bge-m3', input=query)
-    query_embedding = response['embeddings'][0]  # Mảng 1D
+# Thiết lập OpenAI API Key (Đặt biến môi trường hoặc hardcode ở đây)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
+openai.api_key = OPENAI_API_KEY
 
-    # Bước 2: Xây dựng script query cho Elasticsearch
+# Kết nối Elasticsearch
+es = Elasticsearch("http://localhost:9200")
+
+print("Connected to Elasticsearch")
+
+def get_embedding(text):
+    """
+    Lấy embedding từ mô hình text-embedding-3-large của OpenAI.
+    """
+    response = openai.embeddings.create(
+        model="text-embedding-3-large",
+        input=text
+    )
+    return response.data[0].embedding  # Trả về vector embedding
+
+def vector_search(query, k=3, index_name='text_embeddings_openai'):
+    """
+    Tìm kiếm vector bằng Elasticsearch, sử dụng cosine similarity.
+    """
+    query_embedding = get_embedding(query)
+
+    # Xây dựng truy vấn script score
     script_query = {
         "script_score": {
             "query": {
-                "match_all": {}  # Lọc match_all để lấy toàn bộ docs, sau đó chấm điểm bằng vector
+                "match_all": {}  # Lấy tất cả docs, tính điểm theo vector similarity
             },
             "script": {
-                # cosinesim(queryVector, docVector) trả ra [-1..1], ta +1 để tránh số âm
                 "source": "cosineSimilarity(params.queryVector, 'embedding') + 1.0",
                 "params": {
                     "queryVector": query_embedding
@@ -26,64 +45,56 @@ def vector_search(query, k=3, index_name='text_embeddings'):
         }
     }
 
-    # Bước 3: Gửi truy vấn, lấy top-k kết quả
+    # Gửi truy vấn tới Elasticsearch
     res = es.search(index=index_name, query=script_query, size=k)
 
-    # Bước 4: Trích ra text và điểm
+    # Trích xuất kết quả
     hits = res['hits']['hits']
-    docs = []
-    for hit in hits:
-        source = hit['_source']
-        score = hit['_score']
-        docs.append((source["text"], score))
-
+    docs = [(hit['_source']['text'], hit['_score']) for hit in hits]
+    
     return docs
 
-# query = "Why is the sky blue?"
-
-# results = vector_search(query, k=3, index_name='text_embeddings')
-
-# # In kết quả
-# for i, (doc_text, score) in enumerate(results, start=1):
-#     print(f"Document {i}:")
-#     print(f"Text: {doc_text}")
-#     print(f"Score: {score}")
-#     print()
-    
-def generate_answer(question, k=3, index_name='text_embeddings'):
-    # Bước 1: Lấy các tài liệu liên quan
+def generate_answer(question, k=3, index_name='text_embeddings_openai'):
+    """
+    Sinh câu trả lời dựa trên tài liệu từ Elasticsearch và GPT-4o-mini.
+    """
     retrieved_docs = vector_search(question, k, index_name)
 
-    # Bước 2: Chuẩn bị prompt
-    # Ghép tài liệu thành 1 chuỗi context
+    # Ghép các tài liệu thành prompt cho GPT-4o-mini
     context_docs = "\n\n".join([f"- {doc[0]}" for doc in retrieved_docs])
 
-    # Prompt ví dụ: 
     prompt = f"""
-        cho câu hỏi sau đây, Hãy đưa ra câu trả lời thân thiện hơn - và làm rõ từ tài liệu nào trang bao nhiêu
-        Chỉ đưa ra câu trả lời, không nói gì hơn
-        Các đoạn văn liên quan:
-        {context_docs}
+Bạn hãy trả lời câu hỏi dựa trên chỉ dựa vào các đoạn văn dưới đây, không trả lời những thông tin không liên quan:
+{context_docs}
 
-        Câu hỏi: {question}
+Câu hỏi: {question}
 
-        Câu trả lời:
-        """
-    print("Final prompt:\n", prompt)
-    # Bước 3: Gọi mô hình Ollama (hoặc mô hình khác)
-    response = ollama.generate(
-        model="llama3.2:1b",    
-        prompt=prompt
+Câu trả lời:
+"""
+
+    # Gọi GPT-4o-mini để sinh câu trả lời
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",  # Sử dụng GPT-4o-mini thay vì LLaMA
+        messages=[{"role": "system", "content": ("Bạn là trợ lý chuyên gia trong việc trích xuất thông tin từ một văn bản cho trước."
+                                                 + "Hãy cung cấp chính xác tên file mà bạn đã trích xuất")},
+                  {"role": "user", "content": prompt}]
     )
-    return response
 
+    return response.choices[0].message.content  # Trả về nội dung trả lời
 
-# Ví dụ truy vấn từ người dùng:
-question = "dữ liệu cá nhân là gì?"
+# Ví dụ truy vấn
+question = "Dữ liệu cá nhân trong Nghị Định được định nghĩa là gì?"
+answer = generate_answer(question, k=3, index_name='text_embeddings_openai')
 
-# Gọi hàm generate_answer
-answer = generate_answer(question, k=3, index_name='text_embeddings')
+results = vector_search(question, k=3, index_name="text_embeddings_openai")
 
-# In kết quả nhận được
+# # In kết quả
+# print(f"\n🔍 Kết quả tìm kiếm cho: {question}")
+# for i, (doc_text, score) in enumerate(results, start=1):
+#     print(f"\n📌 Document {i}:")
+#     print(f"📝 Nội dung: {doc_text}")
+#     print(f"⭐ Score: {score}")
+
+# In kết quả
 print("Câu hỏi:", question)
 print("Câu trả lời từ mô hình:", answer)
