@@ -2,15 +2,23 @@ from elasticsearch import Elasticsearch
 import ollama
 from sentence_transformers import CrossEncoder
 import numpy as np
+from typing import List, Tuple, Dict, Any
 
 # Kết nối Elasticsearch
 es = Elasticsearch("http://localhost:9200")
 
 
-def vector_search(query, k=3, index_name='text_embeddings'):
+def vector_search(query: str, k: int = 3, index_name: str = 'text_embeddings') -> List[Tuple[str, float]]:
     """
-    Tìm kiếm vector bằng Elasticsearch, sử dụng cosine similarity.
-    Trả về danh sách các tuple (text, score) của các document tìm được.
+    Perform vector search using Elasticsearch with cosine similarity.
+
+    Args:
+        query (str): The search query text
+        k (int, optional): Number of results to return. Defaults to 3.
+        index_name (str, optional): Elasticsearch index name. Defaults to 'text_embeddings'.
+
+    Returns:
+        List[Tuple[str, float]]: List of tuples containing (document_text, similarity_score)
     """
     # Bước 1: Lấy embedding cho truy vấn bằng Ollama (bge-m3)
     response = ollama.embed(model='bge-m3', input=query)
@@ -122,7 +130,18 @@ for i, (doc_text, score) in enumerate(results, start=1):
     print()
 
 
-def generate_answer(question, k=3, index_name='text_embeddings'):
+def generate_answer(question: str, k: int = 3, index_name: str = 'text_embeddings') -> str:
+    """
+    Generate an answer for a given question using RAG approach.
+
+    Args:
+        question (str): The user's question
+        k (int, optional): Number of documents to retrieve. Defaults to 3.
+        index_name (str, optional): Elasticsearch index name. Defaults to 'text_embeddings'.
+
+    Returns:
+        str: Generated answer based on retrieved documents
+    """
     # Bước 1: Lấy các tài liệu liên quan
     retrieved_docs = vector_search(question, k, index_name)
 

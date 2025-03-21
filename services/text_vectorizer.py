@@ -1,12 +1,24 @@
 import ollama
 from elasticsearch import Elasticsearch
 from services.text_extractor import get_chunked_documents_from_pdf
+from typing import Dict, Any
 
 # Initialize Elasticsearch client
 es = Elasticsearch("http://localhost:9200")
 
 
-def vectorize_and_store(text, model='bge-m3', index_name='text_embeddings'):
+def vectorize_and_store(text: str, model: str = 'bge-m3', index_name: str = 'text_embeddings') -> None:
+    """
+    Generate embedding for text and store in Elasticsearch.
+
+    Args:
+        text (str): Input text to vectorize
+        model (str, optional): Model name for embedding generation. Defaults to 'bge-m3'.
+        index_name (str, optional): Elasticsearch index name. Defaults to 'text_embeddings'.
+
+    Returns:
+        None
+    """
     # Generate embedding
     response = ollama.embed(model=model, input=text)
     # print("Response from API:", response)
