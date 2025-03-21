@@ -11,7 +11,8 @@ mapping = {
     "mappings": {
         "properties": {
             "text": {"type": "text"},
-            "embedding": {"type": "dense_vector", "dims": 1024}  # BGE-M3 produces 1024-dimensional embeddings
+            # BGE-M3 produces 1024-dimensional embeddings
+            "embedding": {"type": "dense_vector", "dims": 1024}
         }
     }
 }
@@ -21,5 +22,5 @@ if not es.indices.exists(index=index_name):
     es.indices.create(index=index_name, body=mapping)
 
 # Create new index
-es.indices.delete(index="text_embeddings", ignore=[400, 404])  
+es.indices.delete(index="text_embeddings", ignore=[400, 404])
 es.indices.create(index="text_embeddings", body=mapping)

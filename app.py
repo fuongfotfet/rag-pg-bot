@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from qa_text import generate_answer  # import hàm generate_answer mới
+from services.text_qa import generate_answer  # import hàm generate_answer mới
 
 app = Flask(__name__)
 CORS(app)
+
 
 @app.route('/generate_response', methods=['POST'])
 def generate_response():
@@ -26,6 +27,7 @@ def generate_response():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -8,3 +8,4 @@ pymupdf
 pytesseract
 Pillow
 pdf2image
+sentence_transformers
