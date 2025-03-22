@@ -6,7 +6,7 @@ docker compose build app
 
 # Start all services
 echo "Starting all services..."
-docker compose up 
+docker compose up $1
 
 # Wait for Ollama to be ready
 echo "Waiting for Ollama to start..."

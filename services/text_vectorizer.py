@@ -34,15 +34,15 @@ def vectorize_and_store(text: str, model: str = 'bge-m3', index_name: str = 'tex
     es.index(index=index_name, body=document)
 
 
-pdf_path = "data/13nd.signed.pdf"
+#pdf_path = "data/13nd.signed.pdf"
 # Chunking PDF file
-docs_split = get_chunked_documents_from_pdf(
-    pdf_path, dpi=300, chunk_size=1000, chunk_overlap=100)
+#docs_split = get_chunked_documents_from_pdf(
+#    pdf_path, dpi=300, chunk_size=1000, chunk_overlap=100)
 
 # Push to ElasticSearch
-for i, doc in enumerate(docs_split):
-    print(f"Indexing chunk {i} ...")
-    vectorize_and_store(doc.page_content)
+#for i, doc in enumerate(docs_split):
+#    print(f"Indexing chunk {i} ...")
+#    vectorize_and_store(doc.page_content)
 
 
 # # Example usage
