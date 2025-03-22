@@ -1,3 +1,4 @@
+import os
 from elasticsearch import Elasticsearch
 import ollama
 from sentence_transformers import CrossEncoder
@@ -5,7 +6,9 @@ import numpy as np
 from typing import List, Tuple, Dict, Any
 
 # Kết nối Elasticsearch
-es = Elasticsearch("http://localhost:9200")
+ELASTIC_HOST = os.getenv('ELASTIC_HOST')
+ELASTIC_PORT = os.getenv('ELASTIC_PORT')
+es = Elasticsearch("http://{}:{}".format(ELASTIC_HOST, ELASTIC_PORT))
 
 
 def vector_search(query: str, k: int = 3, index_name: str = 'text_embeddings') -> List[Tuple[str, float]]:

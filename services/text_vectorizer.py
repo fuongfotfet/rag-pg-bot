@@ -1,11 +1,13 @@
+import os
 import ollama
 from elasticsearch import Elasticsearch
 from services.text_extractor import get_chunked_documents_from_pdf
 from typing import Dict, Any
 
 # Initialize Elasticsearch client
-es = Elasticsearch("http://localhost:9200")
-
+ELASTIC_HOST = os.getenv('ELASTIC_HOST')
+ELASTIC_PORT = os.getenv('ELASTIC_PORT')
+es = Elasticsearch("http://{}:{}".format(ELASTIC_HOST, ELASTIC_PORT))
 
 def vectorize_and_store(text: str, model: str = 'bge-m3', index_name: str = 'text_embeddings') -> None:
     """
