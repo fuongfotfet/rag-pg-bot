@@ -1,4 +1,4 @@
-# RAG PostgreSQL Bot
+# RAG FeinGiang Bot
 
 RAG bot using Elasticsearch and Ollama for document search and question answering.
 
