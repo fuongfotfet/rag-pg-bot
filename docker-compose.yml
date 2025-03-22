@@ -2,11 +2,17 @@ version: '3.8'
 
 services:
   app:
-    build: 
+    build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.app
+    image: myapp:latest
     ports:
       - "8000:8000"
+    environment:
+      OLLAMA_HOST: "ollama"
+      OLLAMA_PORT: "11434"
+      ELASTIC_HOST: "elasticsearch"
+      ELASTIC_PORT: "9200"
     networks:
       - app-network
     depends_on:
@@ -18,15 +24,15 @@ services:
     ports:
       - "9200:9200"
     environment:
-      - discovery.type=single-node
-      - http.port=9200
-      - http.max_content_length=10MB
-      - http.cors.enabled=true
-      - http.cors.allow-origin=*
-      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
-      - http.cors.allow-credentials=true
-      - network.publish_host=localhost
-      - xpack.security.enabled=false
+      discovery.type: "single-node"
+      http.port: "9200"
+      http.max_content_length: "10MB"
+      http.cors.enabled: "true"
+      http.cors.allow-origin: "'*'"
+      http.cors.allow-headers: "X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization"
+      http.cors.allow-credentials: "true"
+      network.publish_host: "localhost"
+      xpack.security.enabled: "false"
     volumes:
       - ./data:/usr/share/elasticsearch/data
     networks:
@@ -39,10 +45,14 @@ services:
     volumes:
       - ./models:/models
       - ./ollama_data:/root/.ollama
+      - ./entrypoint.sh:/entrypoint.sh
     networks:
       - app-network
+#    pull_policy: always
+#    tty: true
+#    restart: always
+#    entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]
 
 networks:
   app-network:
     driver: bridge
-

@@ -1,3 +1,4 @@
+import os
 from elasticsearch import Elasticsearch
 import ollama
 from sentence_transformers import CrossEncoder
@@ -5,7 +6,9 @@ import numpy as np
 from typing import List, Tuple, Dict, Any
 
 # Kết nối Elasticsearch
-es = Elasticsearch("http://localhost:9200")
+ELASTIC_HOST = os.getenv('ELASTIC_HOST')
+ELASTIC_PORT = os.getenv('ELASTIC_PORT')
+es = Elasticsearch("http://{}:{}".format(ELASTIC_HOST, ELASTIC_PORT))
 
 
 def vector_search(query: str, k: int = 3, index_name: str = 'text_embeddings') -> List[Tuple[str, float]]:
@@ -57,7 +60,7 @@ def vector_search(query: str, k: int = 3, index_name: str = 'text_embeddings') -
 
 
 # Tải model cross-encoder để đánh giá relevance của các cửa sổ
-reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+#reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
 # def sliding_window_search(chunk, question, window_size=3, threshold=0.5):
 #     """
@@ -118,16 +121,16 @@ reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
 # ========================================================================================================#
 
-query = "Việc chuyển dữ liệu cá nhân ra nước ngoài"
+#query = "Việc chuyển dữ liệu cá nhân ra nước ngoài"
 
-results = vector_search(query, k=3, index_name='text_embeddings')
+#results = vector_search(query, k=3, index_name='text_embeddings')
 
 # In kết quả
-for i, (doc_text, score) in enumerate(results, start=1):
-    print(f"Document {i}:")
-    print(f"Text: {doc_text}")
-    print(f"Score: {score}")
-    print()
+#for i, (doc_text, score) in enumerate(results, start=1):
+#    print(f"Document {i}:")
+#    print(f"Text: {doc_text}")
+#    print(f"Score: {score}")
+#    print()
 
 
 def generate_answer(question: str, k: int = 3, index_name: str = 'text_embeddings') -> str:
