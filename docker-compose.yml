@@ -19,8 +19,7 @@ services:
       - elasticsearch
       - ollama
     volumes:
-      - ./setup_elastic_search.py:/setup_elastic_search.py
-    entrypoint: ["python", "/setup_elastic_search.py"]
+      - ./data:/usr/share/elasticsearch/data
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1

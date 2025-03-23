@@ -23,6 +23,7 @@ docker run -d \
 
 docker exec -it ollama ollama pull bge-m3
 docker exec -it ollama ollama pull llama3.2:1b
+docker exec -it app python setup_elastic_search.py
 
 export ELASTIC_HOST=localhost
 export ELASTIC_PORT=9200

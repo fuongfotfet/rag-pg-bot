@@ -15,6 +15,6 @@ sleep 10
 # Pull required models
 echo "Pulling required models..."
 docker compose exec ollama ollama pull bge-m3
-docker compose exec ollama ollama pull llama2:1b
-
+docker compose exec ollama ollama pull llama3.2:1b
+docker compose exec app python setup_elastic_search.py
 echo "Setup complete! Application is running at http://localhost:8000"
