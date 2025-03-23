@@ -42,7 +42,7 @@ def fetch_answer(query: str) -> Answer:
 @strawberry.type
 class Query:
     @strawberry.field
-    def question(self, query) -> Answer:
+    def question(self, query: str) -> Answer:
         return fetch_answer(query)
 
 
