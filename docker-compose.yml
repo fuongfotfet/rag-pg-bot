@@ -18,6 +18,9 @@ services:
     depends_on:
       - elasticsearch
       - ollama
+    volumes:
+      - ./setup_elastic_search.py:/setup_elastic_search.py
+    entrypoint: ["python", "/setup_elastic_search.py"]
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1

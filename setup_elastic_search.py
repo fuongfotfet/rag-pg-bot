@@ -1,7 +1,10 @@
+import os
 from elasticsearch import Elasticsearch
 
 # Connect to Elasticsearch
-es = Elasticsearch("http://localhost:9200")
+ELASTIC_HOST = os.getenv('ELASTIC_HOST')
+ELASTIC_PORT = os.getenv('ELASTIC_PORT')
+es = Elasticsearch("http://{}:{}".format(ELASTIC_HOST, ELASTIC_PORT))
 
 print("connected")
 
