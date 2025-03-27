@@ -1,45 +1,39 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from services.text_qa import generate_answer
-from typing import Union, Dict, Any
+from rag_system.components.llm_response.generate_response import LLMResponseGenerator
 
 app = Flask(__name__)
 CORS(app)
 
+searcher = LLMResponseGenerator()
 
 @app.route('/generate_response', methods=['POST'])
-def generate_response() -> Union[Response, tuple[Response, int]]:
-    """
-    Generate a response based on the user's query using a RAG (Retrieval-Augmented Generation) approach.
-
-    Expected JSON payload:
-    {
-        "index_name": str,  # Optional. Default: "text_embeddings"
-        "user_query": str   # Required. The user's question
-    }
-
-    Returns:
-        Union[Response, tuple[Response, int]]: JSON response containing either:
-            - Success: {"response": str} with status code 200
-            - Error: {"error": str} with status code 400 or 500
-    """
+def generate_response():
     try:
-        data: Dict[str, Any] = request.get_json()
-        index_name: str = data.get("index_name", "text_embeddings")
-        user_query: str = data.get("user_query")
+        data = request.get_json()
+
+        # Lấy index_name, user_query, và chat_history từ data
+        index_name = data.get("index_name", "dama_index")
+        user_query = data.get("user_query")
+        # Nếu client không gửi kèm chat_history, mặc định là []
+        chat_history = data.get("chat_history", [])
 
         if not user_query:
             return jsonify({"error": "user_query is required"}), 400
 
-        answer: str = generate_answer(user_query, k=3, index_name=index_name)
+        # Gọi hàm generate_response mới, truyền kèm chat_history
+        answer = searcher.generate_response(index_name, user_query, chat_history)
 
+        # Hàm generate_response sẽ cập nhật chat_history (append user & bot),
+        # do đó chat_history đã được chỉnh sửa trong quá trình gọi. 
+        # Trả về response kèm chat_history đã cập nhật để client lưu
         return jsonify({
-            "response": answer
+            "response": answer,
+            "chat_history": chat_history
         })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
