@@ -1,0 +1,11 @@
+elasticsearch
+ollama
+numpy
+flask
+flask-cors
+langchain
+pymupdf
+pytesseract
+Pillow
+pdf2image
+sentence_transformers
