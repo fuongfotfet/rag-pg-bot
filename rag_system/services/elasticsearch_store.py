@@ -2,9 +2,7 @@ import os
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from typing import List, Dict
-from dotenv import load_dotenv
-
-load_dotenv(override=True)
+import ollama
 
 class ElasticsearchVectorStore:
     def __init__(self, index_name: str = "text_embeddings", dim: int = 1024):
@@ -78,10 +76,12 @@ class ElasticsearchVectorStore:
         bulk(self.es, actions)
         print(f"📤 Uploaded {len(actions)} documents to index '{self.index_name}'")
 
-    def semantic_search(self, query_vector: List[float], k: int = 5) -> List[Dict]:
+    def semantic_search(self, question, k: int = 5) -> List[Dict]:
         """
         Truy vấn vector (semantic search) với cosine similarity.
         """
+        response_embed = ollama.embed(model='bge-m3', input = question)
+        query_vector = response_embed['embeddings'][0] 
         query = {
             "size": k,
             "query": {

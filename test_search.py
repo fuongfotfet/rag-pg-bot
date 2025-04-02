@@ -3,9 +3,10 @@ from rag_system.components.llm_response.generate_response import LLMResponseGene
 
 def test_search():
     searcher = LLMResponseGenerator()
-    index_name = "dama_index"
-    user_query = "What does GFF stand for?"
-    searcher.generate_response(index_name, user_query)
+    chat_history = []
+    index_name = "text_embeddings"
+    user_query = "dữ liệu cá nhân là gì?"
+    searcher.generate_response(index_name, user_query, chat_history)
 
 if __name__ == "__main__":
     test_search()

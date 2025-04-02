@@ -18,5 +18,5 @@ def test_loader(url):
     embedder.embed_and_load(chunked_data)
 
 if __name__ == "__main__":
-    url = "data/small.pdf" 
+    url = "data/gian.pdf" 
     test_loader(url)

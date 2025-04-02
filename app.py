@@ -1,11 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from rag_system.components.llm_response.generate_response import LLMResponseGenerator
-
+import logging
 app = Flask(__name__)
 CORS(app)
 
 searcher = LLMResponseGenerator()
+# Cấu hình logger
+# logging.basicConfig(level=logging.DEBUG)  # Thiết lập mức log
+# logger = logging.getLogger(__name__)
 
 @app.route('/generate_response', methods=['POST'])
 def generate_response():
@@ -33,6 +36,7 @@ def generate_response():
         })
 
     except Exception as e:
+        # logger.error(f"An error occurred: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
